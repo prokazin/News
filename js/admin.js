@@ -1,6 +1,4 @@
-// Админ-панель: статистика посещений
-
-const PASSWORD = '12345'; // ← смените на свой пароль
+const PASSWORD = '12345'; // Смените на свой пароль
 
 function initAdmin() {
     const params = new URLSearchParams(window.location.search);
@@ -23,33 +21,25 @@ function initAdmin() {
     loadStats();
 }
 
-async function loadStats() {
+function loadStats() {
     const content = document.getElementById('admin-content');
-    content.innerHTML = '<div class="loader">Загрузка статистики...</div>';
     
+    // Загружаем статистику из localStorage
+    let visits = [];
     try {
-        const response = await fetch('stats.json?t=' + Date.now());
-        if (!response.ok) throw new Error('Не удалось загрузить статистику');
-        
-        const data = await response.json();
-        const visits = data.visits || [];
-        
-        if (visits.length === 0) {
-            content.innerHTML = '<div class="no-data">Статистики пока нет</div>';
-            return;
+        const saved = localStorage.getItem('visitsData');
+        if (saved) {
+            visits = JSON.parse(saved);
         }
-        
-        // Считаем статистику
-        const stats = calculateStats(visits);
-        renderStats(stats, visits);
-        
-    } catch (error) {
-        content.innerHTML = `
-            <div class="error-box">
-                ⚠️ Ошибка загрузки статистики: ${error.message}
-            </div>
-        `;
+    } catch(e) {}
+    
+    if (visits.length === 0) {
+        content.innerHTML = '<div class="no-data">Статистики пока нет</div>';
+        return;
     }
+    
+    const stats = calculateStats(visits);
+    renderStats(stats, visits);
 }
 
 function calculateStats(visits) {
@@ -63,39 +53,24 @@ function calculateStats(visits) {
     let todayCount = 0;
     let yesterdayCount = 0;
     let weekCount = 0;
-    let lastVisits = [];
     
     visits.forEach(visit => {
         const date = new Date(visit.timestamp);
-        
-        // Сегодня
-        if (date >= today) {
-            todayCount++;
-        }
-        // Вчера
-        if (date >= yesterday && date < today) {
-            yesterdayCount++;
-        }
-        // За неделю
-        if (date >= weekAgo) {
-            weekCount++;
-        }
+        if (date >= today) todayCount++;
+        if (date >= yesterday && date < today) yesterdayCount++;
+        if (date >= weekAgo) weekCount++;
     });
     
-    // Последние 50 визитов
-    lastVisits = visits
+    const lastVisits = visits
         .slice()
         .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
         .slice(0, 50);
     
-    return { todayCount, yesterdayCount, weekCount, lastVisits };
+    return { todayCount, yesterdayCount, weekCount, lastVisits, total: visits.length };
 }
 
 function renderStats(stats, allVisits) {
     const content = document.getElementById('admin-content');
-    
-    // Проверяем, есть ли вообще визиты
-    const total = allVisits.length;
     
     content.innerHTML = `
         <div class="stats-grid">
@@ -112,7 +87,7 @@ function renderStats(stats, allVisits) {
                 <div class="stat-label">📊 За неделю</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">${total}</div>
+                <div class="stat-number">${stats.total}</div>
                 <div class="stat-label">📈 Всего визитов</div>
             </div>
         </div>
@@ -130,7 +105,7 @@ function renderStats(stats, allVisits) {
                     ${stats.lastVisits.map(visit => `
                         <tr>
                             <td>${formatDate(visit.timestamp)}</td>
-                            <td style="font-size:12px;color:#57606a;max-width:300px;word-break:break-all;">${visit.userAgent || '—'}</td>
+                            <td style="font-size:12px;color:#57606a;word-break:break-all;">${visit.userAgent || '—'}</td>
                         </tr>
                     `).join('')}
                     ${stats.lastVisits.length === 0 ? `
@@ -140,7 +115,7 @@ function renderStats(stats, allVisits) {
             </table>
         </div>
         <div style="margin-top:12px;font-size:13px;color:#57606a;text-align:right;">
-            Показано ${stats.lastVisits.length} из ${total} визитов
+            Показано ${stats.lastVisits.length} из ${stats.total} визитов
         </div>
     `;
 }
@@ -153,5 +128,4 @@ function formatDate(timestamp) {
     });
 }
 
-// Запуск
 initAdmin();
