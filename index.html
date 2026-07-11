@@ -3,18 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Новостной агрегатор</title>
+    <title>Военно-политический дайджест</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <header>
         <div class="container">
-            <h1>🌍 Новостной обзор</h1>
-            <p class="subtitle">США · Украина · Европа</p>
+            <h1>
+                ⚔️ Военно-политический дайджест
+                <span>LIVE</span>
+            </h1>
+            <div class="subtitle">
+                <span>🇺🇸 США</span>
+                <span>🇺🇦 Украина</span>
+                <span>🇬🇧 Европа</span>
+                <span class="badge">📡 Только военно-политические новости</span>
+            </div>
         </div>
     </header>
 
     <main class="container">
+        <div class="news-counter" id="news-counter">
+            <span>📰 Всего новостей: <span class="count" id="total-count">0</span></span>
+            <span class="update-time" id="update-time">Обновлено: только что</span>
+            <button class="refresh-btn" onclick="updateNews()">🔄 Обновить</button>
+        </div>
+
         <div id="news-feed">
             <div class="loader">Загрузка новостей...</div>
         </div>
@@ -22,8 +36,15 @@
 
     <footer>
         <div class="container">
-            <p>Источники: CNN, Fox News, Kyiv Independent, Reuters, BBC, DW</p>
-            <p>Обновление каждые 2 часа</p>
+            <p>📡 Источники:</p>
+            <div class="sources">
+                <span>🇺🇸 CNN</span>
+                <span>🇺🇸 Fox News</span>
+                <span>🇺🇦 Kyiv Independent</span>
+                <span>🇬🇧 Reuters</span>
+                <span>🇬🇧 BBC</span>
+            </div>
+            <p style="margin-top:10px;">Обновление каждые 30 минут · <span id="footer-time"></span></p>
         </div>
     </footer>
 
