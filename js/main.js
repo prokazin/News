@@ -7,6 +7,17 @@ const SOURCES = [
     { name: "BBC", country: "UK", rss: "http://feeds.bbci.co.uk/news/rss.xml" }
 ];
 
+// КЛЮЧЕВЫЕ СЛОВА ДЛЯ ФИЛЬТРА (только военно-политические новости о войне)
+const KEYWORDS = [
+    "ukraine", "russia", "putin", "zelensky", "kyiv", "moscow",
+    "war", "military", "army", "troops", "soldiers", "defense", "defence",
+    "weapons", "missile", "drone", "tank", "artillery", "ammunition",
+    "sanctions", "aid", "support", "supplies", "delivery",
+    "attack", "strike", "bomb", "shelling", "offensive", "counteroffensive",
+    "nato", "eu", "european", "alliance", "diplomacy", "negotiations",
+    "crimea", "donbas", "donetsk", "luhansk", "kharkiv", "odesa", "dnipro"
+];
+
 const PROXY = "https://corsproxy.io/?";
 let allNews = [];
 
@@ -42,6 +53,17 @@ async function fetchRSS(url) {
         console.error('Ошибка RSS:', url, e);
         return [];
     }
+}
+
+// Функция проверки релевантности новости
+function isRelevant(title) {
+    const lowerTitle = title.toLowerCase();
+    for (const keyword of KEYWORDS) {
+        if (lowerTitle.includes(keyword.toLowerCase())) {
+            return true;
+        }
+    }
+    return false;
 }
 
 function isDuplicate(url) {
@@ -100,22 +122,29 @@ async function updateNews() {
     const feed = document.getElementById('news-feed');
     feed.innerHTML = '<div class="loader">🔄 Загрузка новостей...</div>';
     let newItems = [];
+    
     for (const source of SOURCES) {
         try {
             const items = await fetchRSS(source.rss);
             for (const item of items) {
-                if (!isDuplicate(item.link)) {
-                    newItems.push({
-                        url: item.link,
-                        title_en: item.title,
-                        title_ru: null,
-                        source: source.name,
-                        country: source.country,
-                        published: item.pubDate || new Date().toISOString()
-                    });
-                }
+                // Проверяем дубликат
+                if (isDuplicate(item.link)) continue;
+                
+                // Проверяем релевантность (фильтр по ключевым словам)
+                if (!isRelevant(item.title)) continue;
+                
+                newItems.push({
+                    url: item.link,
+                    title_en: item.title,
+                    title_ru: null,
+                    source: source.name,
+                    country: source.country,
+                    published: item.pubDate || new Date().toISOString()
+                });
             }
-        } catch(e) { console.error('Ошибка источника:', source.name); }
+        } catch(e) { 
+            console.error('Ошибка источника:', source.name); 
+        }
     }
     
     if (newItems.length > 0) {
