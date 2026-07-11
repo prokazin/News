@@ -7,7 +7,7 @@ const SOURCES = [
     { name: "BBC", country: "UK", rss: "http://feeds.bbci.co.uk/news/rss.xml" }
 ];
 
-const PROXY = "https://api.allorigins.win/raw?url=";
+const PROXY = "https://corsproxy.io/?";
 let allNews = [];
 
 function loadSavedNews() {
