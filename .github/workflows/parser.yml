@@ -1,0 +1,37 @@
+name: Парсинг новостей
+
+on:
+  schedule:
+    - cron: '0 */2 * * *'  # Каждые 2 часа
+  workflow_dispatch:        # Возможность запустить вручную
+
+jobs:
+  parse:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Клонировать репозиторий
+        uses: actions/checkout@v4
+        
+      - name: Установить Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          
+      - name: Установить зависимости
+        run: |
+          cd parser
+          pip install -r requirements.txt
+          
+      - name: Запустить парсер
+        run: |
+          cd parser
+          python parser.py
+        env:
+          DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
+          
+      - name: Сохранить изменения
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Автоматическое обновление новостей"
+          file_pattern: "news.json"
