@@ -95,6 +95,7 @@ function renderNews() {
     const feed = document.getElementById('news-feed');
     if (allNews.length === 0) {
         feed.innerHTML = '<div class="loader">Новостей пока нет. Обновление...</div>';
+        updateCounter();
         return;
     }
     const sorted = [...allNews].sort((a, b) => new Date(b.published) - new Date(a.published));
@@ -103,12 +104,16 @@ function renderNews() {
         const title = item.title_ru || item.title_en || 'Без заголовка';
         const badge = item.title_ru ? '' : '<span class="news-badge">EN</span>';
         const titleClass = item.title_ru ? 'news-title' : 'news-title en';
+        const time = item.published ? new Date(item.published).toLocaleString('ru-RU', {
+            day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
+        }) : '';
         return `
             <div class="news-item">
                 <div class="news-header">
                     <span class="news-flag">${getFlag(item.country)}</span>
                     <span class="news-source">${item.source}</span>
                     <span class="news-country">${item.country}</span>
+                    ${time ? `<span class="news-time">🕐 ${time}</span>` : ''}
                 </div>
                 <a href="${item.url}" target="_blank" rel="noopener" class="${titleClass}">
                     ${title} ${badge}
@@ -116,6 +121,22 @@ function renderNews() {
             </div>
         `;
     }).join('');
+    updateCounter();
+}
+
+function updateCounter() {
+    const countEl = document.getElementById('total-count');
+    const timeEl = document.getElementById('update-time');
+    if (countEl) countEl.textContent = allNews.length;
+    if (timeEl) {
+        const now = new Date();
+        timeEl.textContent = `Обновлено: ${now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`;
+    }
+    const footerTime = document.getElementById('footer-time');
+    if (footerTime) {
+        const now = new Date();
+        footerTime.textContent = `🕐 ${now.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
+    }
 }
 
 async function updateNews() {
@@ -127,10 +148,7 @@ async function updateNews() {
         try {
             const items = await fetchRSS(source.rss);
             for (const item of items) {
-                // Проверяем дубликат
                 if (isDuplicate(item.link)) continue;
-                
-                // Проверяем релевантность (фильтр по ключевым словам)
                 if (!isRelevant(item.title)) continue;
                 
                 newItems.push({
@@ -148,7 +166,6 @@ async function updateNews() {
     }
     
     if (newItems.length > 0) {
-        // Перевод заголовков
         feed.innerHTML = '<div class="loader">🔄 Перевод заголовков...</div>';
         for (let i = 0; i < newItems.length; i++) {
             const translated = await translateText(newItems[i].title_en);
@@ -168,22 +185,36 @@ async function updateNews() {
             renderNews();
         }
     }
+    updateCounter();
 }
 
 async function sendToTelegram(items) {
     const BOT_TOKEN = "8972375608:AAE4thoN-Im-Zvf8eGywzdj_cRL2HCSXk1M";
     const CHANNEL = "@newspapernewsusa";
+    
     for (const item of items) {
         const flag = getFlag(item.country);
         const title = item.title_ru || item.title_en;
-        const msg = `${flag} ${item.source}\n${title}\n🔗 ${item.url}`;
+        const time = new Date(item.published).toLocaleString('ru-RU', {
+            hour: '2-digit', minute: '2-digit'
+        });
+        
+        const msg = `📌 ${flag} <b>${item.source}</b>  ·  ${time}\n\n${title}\n\n🔗 <a href="${item.url}">Читать полностью</a>`;
+        
         try {
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: CHANNEL, text: msg, disable_web_page_preview: true })
+                body: JSON.stringify({
+                    chat_id: CHANNEL,
+                    text: msg,
+                    parse_mode: 'HTML',
+                    disable_web_page_preview: true
+                })
             });
-        } catch(e) { console.error('Ошибка отправки в Telegram'); }
+        } catch(e) { 
+            console.error('Ошибка отправки в Telegram'); 
+        }
     }
 }
 
