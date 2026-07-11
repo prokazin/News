@@ -1,4 +1,4 @@
-const PASSWORD = '12345'; // Смените на свой пароль
+const PASSWORD = '12345';
 
 function initAdmin() {
     const params = new URLSearchParams(window.location.search);
@@ -24,7 +24,6 @@ function initAdmin() {
 function loadStats() {
     const content = document.getElementById('admin-content');
     
-    // Загружаем статистику из localStorage
     let visits = [];
     try {
         const saved = localStorage.getItem('visitsData');
