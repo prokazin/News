@@ -53,6 +53,22 @@ function getFlag(country) {
     return flags[country] || '🌍';
 }
 
+// Функция перевода через бесплатный API
+async function translateText(text) {
+    try {
+        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ru&dt=t&q=${encodeURIComponent(text)}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        if (data && data[0]) {
+            return data[0][0][0];
+        }
+        return null;
+    } catch(e) {
+        console.error('Ошибка перевода:', e);
+        return null;
+    }
+}
+
 function renderNews() {
     const feed = document.getElementById('news-feed');
     if (allNews.length === 0) {
@@ -101,7 +117,17 @@ async function updateNews() {
             }
         } catch(e) { console.error('Ошибка источника:', source.name); }
     }
+    
     if (newItems.length > 0) {
+        // Перевод заголовков
+        feed.innerHTML = '<div class="loader">🔄 Перевод заголовков...</div>';
+        for (let i = 0; i < newItems.length; i++) {
+            const translated = await translateText(newItems[i].title_en);
+            if (translated) {
+                newItems[i].title_ru = translated;
+            }
+        }
+        
         allNews = [...newItems, ...allNews];
         saveNews();
         renderNews();
@@ -120,7 +146,8 @@ async function sendToTelegram(items) {
     const CHANNEL = "@newspapernewsusa";
     for (const item of items) {
         const flag = getFlag(item.country);
-        const msg = `${flag} ${item.source}\n${item.title_en}\n🔗 ${item.url}`;
+        const title = item.title_ru || item.title_en;
+        const msg = `${flag} ${item.source}\n${title}\n🔗 ${item.url}`;
         try {
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                 method: 'POST',
