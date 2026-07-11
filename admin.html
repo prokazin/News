@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ-панель</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .admin-container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #d0d7de;
+            margin-bottom: 24px;
+        }
+        .admin-header h1 {
+            font-size: 22px;
+            color: #0d1117;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: #ffffff;
+            border: 1px solid #d0d7de;
+            border-radius: 8px;
+            padding: 18px 20px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #0d1117;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #57606a;
+            margin-top: 4px;
+        }
+        .visits-table {
+            background: #ffffff;
+            border: 1px solid #d0d7de;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .visits-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .visits-table th {
+            background: #f6f8fa;
+            text-align: left;
+            padding: 10px 16px;
+            font-size: 13px;
+            color: #57606a;
+            border-bottom: 1px solid #d0d7de;
+        }
+        .visits-table td {
+            padding: 10px 16px;
+            font-size: 14px;
+            border-bottom: 1px solid #f0f2f5;
+            color: #0d1117;
+        }
+        .visits-table tr:last-child td {
+            border-bottom: none;
+        }
+        .no-data {
+            text-align: center;
+            padding: 40px 0;
+            color: #57606a;
+        }
+        .error-box {
+            background: #ffebe9;
+            border: 1px solid #ffc1b5;
+            border-radius: 8px;
+            padding: 16px 20px;
+            color: #8b1a1a;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 600px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .admin-header h1 {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container" id="admin-panel">
+        <div class="admin-header">
+            <h1>📊 Админ-панель</h1>
+            <span id="admin-status" style="font-size:14px;color:#57606a;"></span>
+        </div>
+        <div id="admin-content"></div>
+    </div>
+
+    <script src="js/admin.js"></script>
+</body>
+</html>
