@@ -5,12 +5,10 @@ function recordVisit() {
         const today = new Date().toISOString().slice(0, 10);
         const storageKey = `visit_${today}`;
         
-        // Проверяем, был ли уже визит сегодня
         if (localStorage.getItem(storageKey)) {
             return;
         }
         
-        // Загружаем существующую статистику
         let visits = [];
         try {
             const saved = localStorage.getItem('visitsData');
@@ -19,13 +17,11 @@ function recordVisit() {
             }
         } catch(e) {}
         
-        // Добавляем новый визит
         visits.push({
             timestamp: new Date().toISOString(),
             userAgent: navigator.userAgent.slice(0, 100)
         });
         
-        // Сохраняем (ограничиваем 500 записей)
         if (visits.length > 500) {
             visits = visits.slice(-500);
         }
@@ -33,10 +29,7 @@ function recordVisit() {
         localStorage.setItem('visitsData', JSON.stringify(visits));
         localStorage.setItem(storageKey, 'true');
         
-    } catch(e) {
-        // Тихо падаем
-    }
+    } catch(e) {}
 }
 
-// Запись визита через 2 секунды после загрузки
 setTimeout(recordVisit, 2000);
